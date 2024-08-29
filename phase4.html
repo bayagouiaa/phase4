@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz It - The Ultimate Culer Quiz</title>
+    <style>
+        body {
+            font-family: 'Monospace', sans-serif;
+            background-color: #000;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        #start-screen, #quiz-screen, #score-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+        }
+
+        #start-screen {
+            background-image: url('fcb_start.jpg');
+        }
+
+        #quiz-screen.blue {
+            background-color: #003087;
+        }
+
+        #quiz-screen.red {
+            background-color: #A50044;
+        }
+
+        #score-screen {
+            background-color: #000;
+        }
+
+        #app-name {
+            font-size: 3em;
+            font-family: cursive;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        p {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        #start-button {
+            background-color: red;
+            color: white;
+            animation: flicker 1s infinite alternate;
+            border-radius: 15px;
+        }
+
+        @keyframes flicker {
+            0% { background-color: blue; }
+            100% { background-color: red; }
+        }
+
+        #submit-button {
+            background-color: #333;
+            color: white;
+            padding: 10px 25px;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+
+        #submit-button.clicked {
+            background-color: green;
+        }
+
+        .option-button {
+            background-color: #555;
+            color: white;
+            border-radius: 10px;
+            padding: 10px 20px;
+            margin: 10px;
+            width: 200px;
+            text-align: center;
+        }
+
+        .option-button:hover {
+            background-color: #777;
+        }
+
+        #feedback.correct {
+            color: green;
+            background-color: white;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 10px;
+            width: 60%;
+        }
+
+        #feedback.incorrect {
+            color: red;
+            background-color: white;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 10px;
+            width: 60%;
+        }
+
+        #final-score {
+            font-size: 2.5em;
+            margin-top: 20px;
+        }
+
+        #final-message {
+            font-size: 2em;
+            color: white;
+            animation: moveText 2s infinite alternate;
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        @keyframes moveText {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(10px); }
+        }
+
+        .confetti {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            background-image: url('confetti.gif');
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="start-screen">
+            <h1 id="app-name">Quiz It</h1>
+            <p>The ultimate culer quiz to test your knowledge about the club</p>
+            <button id="start-button">Start</button>
+        </div>
+        
+        <div id="quiz-screen" class="blue" style="display: none;">
+            <div id="question-container">
+                <h2 id="question"></h2>
+                <div class="options">
+                    <button class="option-button" onclick="checkAnswer(0)"></button>
+                    <button class="option-button" onclick="checkAnswer(1)"></button>
+                    <button class="option-button" onclick="checkAnswer(2)"></button>
+                </div>
+            </div>
+            <button id="submit-button" onclick="submitAnswer()">Submit</button>
+            <p id="feedback" style="display: none;"></p>
+        </div>
+        
+        <div id="score-screen" style="display: none;">
+            <div class="confetti" style="display: none;"></div>
+            <h2 id="final-score"></h2>
+            <p id="final-message"></p>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Which year was FC Barcelona founded?",
+                options: ["1899", "1900", "1919"],
+                correctAnswer: 0
+            },
+            {
+                question: "Who is the club's all-time top scorer?",
+                options: ["Lionel Messi", "Ronaldinho", "Luis Suárez"],
+                correctAnswer: 0
+            },
+            {
+                question: "What is the name of FC Barcelona's stadium?",
+                options: ["Camp Nou", "Santiago Bernabéu", "Anfield"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which rival club does FC Barcelona face in El Clásico?",
+                options: ["Real Madrid", "Atlético Madrid", "Sevilla"],
+                correctAnswer: 0
+            },
+            {
+                question: "Who was FC Barcelona's manager during the famous 2008-2012 era?",
+                options: ["Pep Guardiola", "Johan Cruyff", "Frank Rijkaard"],
+                correctAnswer: 0
+            },
+            {
+                question: "In which year did FC Barcelona win their first UEFA Champions League?",
+                options: ["1992", "2006", "2009"],
+                correctAnswer: 0
+            },
+            {
+                question: "What is the nickname of FC Barcelona supporters?",
+                options: ["Culés", "Los Blancos", "Reds"],
+                correctAnswer: 0
+            },
+            {
+                question: "Which player scored the winning goal in the 2009 Champions League final?",
+                options: ["Lionel Messi", "Samuel Eto'o", "Andrés Iniesta"],
+                correctAnswer: 1
+            },
+            {
+                question: "How many Ballon d'Or awards has Lionel Messi won as of 2024?",
+                options: ["7", "8", "6"],
+                correctAnswer: 1
+            },
+            {
+                question: "What is the club's motto?",
+                options: ["More than a club", "Winning is everything", "Pride of Catalonia"],
+                correctAnswer: 0
+            }
+        ];
+            
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswer = null;
+
+        function startQuiz() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const question = questions[currentQuestionIndex];
+            document.getElementById('question').textContent = question.question;
+            const options = document.querySelectorAll('.option-button');
+            options.forEach((option, index) => {
+                option.textContent = question.options[index];
+                option.disabled = false;
+            });
+            document.getElementById('submit-button').classList.remove('clicked');
+            document.getElementById('feedback').style.display = 'none';
+
+            // Change background color based on question index
+            if (currentQuestionIndex % 2 === 0) {
+                document.getElementById('quiz-screen').className = 'blue';
+            } else {
+                document.getElementById('quiz-screen').className = 'red';
+            }
+        }
+
+        function checkAnswer(index) {
+            selectedAnswer = index;
+            document.getElementById('submit-button').classList.add('clicked');
+        }
+
+        function submitAnswer() {
+            const question = questions[currentQuestionIndex];
+            const feedback = document.getElementById('feedback');
+            if (selectedAnswer === question.correctAnswer) {
+                feedback.textContent = "Correct answer!";
+                feedback.className = "correct";
+                score += 3;
+            } else {
+                feedback.textContent = `Wrong answer! The correct answer was "${question.options[question.correctAnswer]}"`;
+                feedback.className = "incorrect";
+            }
+            feedback.style.display = 'block';
+            
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                setTimeout(loadQuestion, 2000);
+            } else {
+                setTimeout(showScore, 2000);
+            }
+        }
+
+        function showScore() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('score-screen').style.display = 'block';
+
+            const finalScoreText = document.getElementById('final-score');
+            const finalMessageText = document.getElementById('final-message');
+
+            finalScoreText.textContent = `Your final score is: ${score}/30`;
+
+            if (score <= 10) {
+                finalMessageText.textContent = "Well, turns out you don't know much about the club 😢";
+            } else if (score <= 20) {
+                finalMessageText.textContent = "You're almost there!";
+            } else {
+                finalMessageText.textContent = "You're a true culer, congratulations!";
+                document.querySelector('.confetti').style.display = 'block';
+            }
+        }
+
+        document.getElementById('start-button').addEventListener('click', startQuiz);
+    </script>
+</body>
+</html>
